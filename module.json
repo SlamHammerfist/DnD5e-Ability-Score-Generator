@@ -1,0 +1,31 @@
+{
+  "id": "dnd5e-ability-score-generator",
+  "title": "D&D 5e Ability Score Generator",
+  "description": "Adds a stat generation button to DnD5e character sheets with support for rolling, point buy, and standard array.",
+  "version": "1.4.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "14"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "dnd5e",
+        "type": "system",
+        "compatibility": {
+          "minimum": "5.0.0",
+          "verified": "6"
+        }
+      }
+    ]
+  },
+  "esmodules": ["scripts/main.js"],
+  "styles": ["styles/ability-score-generator.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ]
+}

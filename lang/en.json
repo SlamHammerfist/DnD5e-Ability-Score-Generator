@@ -1,0 +1,75 @@
+{
+  "DND5ESG": {
+    "Button": "Generate Stats",
+    "Title": "Ability Score Generator: {name}",
+    "Method": {
+      "roll": "Roll",
+      "point": "Point Buy",
+      "array": "Standard Array"
+    },
+    "Ability": "Ability",
+    "Current": "Current",
+    "New": "New",
+    "Modifier": "Mod",
+    "Cost": "Cost",
+    "Bonus": "Bonus",
+    "Final": "Final",
+    "BonusHint": "Bonuses already applied by your background, feats, and class ASIs. They're added on top of the new scores, up to the ability maximum. Hover a bonus to see its sources.",
+    "Unassigned": "—",
+    "RollButton": "Roll Scores",
+    "RerollButton": "Reroll All",
+    "RerollsRemaining": "Rerolls remaining: {n}",
+    "RerollsUnlimited": "Unlimited rerolls",
+    "NoRerollsLeft": "No rerolls remaining",
+    "NoRollsYet": "No scores rolled yet. Click Roll Scores to generate six values.",
+    "Formula": "Formula: {formula}",
+    "Total": "Total: {total}",
+    "InOrder": "Assign in Order",
+    "Clear": "Clear",
+    "PointsSpent": "Points spent: {spent} / {budget}",
+    "PointsHint": "Scores range from 8 to 15 before bonuses.",
+    "ArrayHint": "Drag each value of the standard array onto an ability, or click a value and then an ability. Dropping on a filled ability swaps the two.",
+    "AssignHint": "Drag a value onto an ability, or click a value and then an ability. Dropping on a filled ability swaps the two. Drag a placed value back here to remove it.",
+    "DropHere": "Drop here",
+    "PoolEmpty": "All values placed. Drag one back here to remove it.",
+    "Apply": "Apply to Sheet",
+    "Reset": "Reset (GM)",
+    "Committed": "You have rolled scores for this character, so you must use the rolled values.",
+    "NoMethods": "No stat generation methods are enabled. Ask your GM.",
+    "Notify": {
+      "NotAllowed": "You can't generate stats for this character.",
+      "NoRerolls": "No rerolls remaining for this character.",
+      "BadFormula": "Invalid roll formula in settings: {formula}",
+      "Incomplete": "Assign a score to every ability first.",
+      "OverBudget": "You've spent more points than the budget allows.",
+      "Applied": "Ability scores applied to {name}.",
+      "Reset": "{name} reset: ability scores set to 10 plus existing bonuses."
+    },
+    "Confirm": {
+      "RerollTitle": "Reroll Ability Scores?",
+      "RerollContent": "This replaces the current rolled scores. It can't be undone.",
+      "ApplyTitle": "Apply Ability Scores?",
+      "ApplyContent": "This overwrites the base ability scores on {name}.",
+      "UnspentContent": "You still have {left} unspent point(s). Apply anyway?",
+      "ResetTitle": "Reset Ability Score Generator?",
+      "ResetContent": "Sets every ability score on {name} back to 10, keeping bonuses from background, feats and class ASIs. Also clears the rolled scores, reroll count and applied lock. This can't be undone."
+    },
+    "Chat": {
+      "Rolled": "{name} rolled ability scores",
+      "Applied": "{name} set ability scores using {method}"
+    },
+    "Settings": {
+      "allowRoll": { "Name": "Allow Rolling", "Hint": "Let users generate scores by rolling dice." },
+      "allowPointBuy": { "Name": "Allow Point Buy", "Hint": "Let users generate scores with point buy." },
+      "allowArray": { "Name": "Allow Standard Array", "Hint": "Let users assign the standard array (15, 14, 13, 12, 10, 8)." },
+      "rollFormula": { "Name": "Roll Formula", "Hint": "Formula rolled for each ability score. Examples: 4d6kh3 (standard), 4d6r1kh3 (reroll 1s), 3d6, 2d6+6." },
+      "pointBuyBudget": { "Name": "Point Buy Budget", "Hint": "Number of points available for point buy. 27 is standard." },
+      "playerRerolls": { "Name": "Player Rerolls", "Hint": "How many times a player may reroll a full set after the first roll. 0 = no rerolls, -1 = unlimited. GMs are never limited." },
+      "rollCommits": { "Name": "Rolling Commits Players", "Hint": "Once a player rolls, they must use the rolled values and can't switch to point buy or standard array." },
+      "includeAdvancementBonuses": { "Name": "Keep Background & Feat Bonuses", "Hint": "Add ability score increases already applied by background, feat, and class ASI advancements on top of the generated scores, so applying doesn't wipe them out." },
+      "postToChat": { "Name": "Post to Chat", "Hint": "Post rolled scores and applied results to chat." },
+      "playersCanUse": { "Name": "Players Can Use", "Hint": "Show the stat generator to players who own a character. GMs always see it." },
+      "lockAfterApply": { "Name": "Lock After Applying", "Hint": "Hide the generator from players once scores have been applied. A GM can reset it from the generator window." }
+    }
+  }
+}

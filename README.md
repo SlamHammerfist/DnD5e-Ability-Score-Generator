@@ -37,4 +37,15 @@ game.modules.get("dnd5e-ability-score-generator").api.open(actor);
 The GM's generator window has a **Reset** button. It sets every ability score back to 10 plus any background, feat or class ASI bonuses, and clears the rolls, the reroll count and the lock.
 
 ## Install
-Copy the `dnd5e-ability-score-generator` folder into `Data/modules/`, then enable it in your world.
+In Foundry, open **Add-on Modules → Install Module** and paste this manifest URL:
+```
+https://github.com/SlamHammerfist/DnD5e-Ability-Score-Generator/releases/latest/download/module.json
+```
+Or copy the `dnd5e-ability-score-generator` folder into `Data/modules/`. Then enable it in your world.
+
+## Releasing
+1. Bump `version` in `module.json` and add a `## x.y.z` section to `CHANGELOG.md`.
+2. Commit and push.
+3. Tag and push: `git tag v1.5.0 && git push origin v1.5.0`
+
+The **Release** workflow builds `module.zip`, sets `version` and `download` in the released `module.json` from the tag, and publishes a GitHub release with that version's changelog section as its notes.

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 (2026-11-19)
+### Changed
+- The generator window now uses the dnd5e system's window style, like the system's own dialogs and the D&D 5e Crafting module: the large title with the character's name beneath it, sheet-style method tabs with icons, gold-bordered cards, pills for the formula, rerolls, total and points spent, gold-bordered value chips and gold +/− buttons for point buy.
+- The confirmation dialogs use the dnd5e style too.
+
 ## 1.4.0 (2026-11-12)
 ### Changed
 - Renamed the module from `dnd5e-stat-generator` to `dnd5e-ability-score-generator`, titled "D&D 5e Ability Score Generator".

@@ -9,7 +9,8 @@ const STANDARD_ARRAY = [15, 14, 13, 12, 10, 8];
 const POINT_COSTS = { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 };
 const PB_MIN = 8;
 const PB_MAX = 15;
-const ICON = "fas fa-dice-d20";
+const ICON = "fa-solid fa-dice-d20";
+const METHOD_ICONS = { roll: "fa-solid fa-dice", point: "fa-solid fa-coins", array: "fa-solid fa-list-ol" };
 
 /* -------------------------------------------- */
 /*  Helpers                                     */
@@ -74,7 +75,8 @@ function abilityMax(actor, key) {
 async function confirmDialog(title, content) {
   const { DialogV2 } = foundry.applications.api;
   const result = await DialogV2.confirm({
-    window: { title },
+    classes: ["dnd5e2"],
+    window: { title, icon: ICON },
     content: `<p>${content}</p>`,
     modal: true,
     rejectClose: false
@@ -102,7 +104,18 @@ function openGenerator(actor) {
 /*  Application                                 */
 /* -------------------------------------------- */
 
-class StatGenerator extends foundry.applications.api.ApplicationV2 {
+/**
+ * Built on the dnd5e system's application base (like the system's own dialogs) so the
+ * window gets the system frame, the large title with the character's name beneath it,
+ * and the system's cards, tabs, pills and gold buttons.
+ * Falls back to a plain ApplicationV2 on dnd5e versions without the mixin.
+ */
+const { ApplicationV2 } = foundry.applications.api;
+const BaseApp = globalThis.dnd5e?.applications?.api?.ApplicationV2Mixin
+  ? dnd5e.applications.api.ApplicationV2Mixin(ApplicationV2, { handlebars: false })
+  : ApplicationV2;
+
+class StatGenerator extends BaseApp {
   constructor(actor, options = {}) {
     super({ id: `${MODULE_ID}-${actor.id}`, ...options });
     this.actor = actor;
@@ -115,8 +128,8 @@ class StatGenerator extends foundry.applications.api.ApplicationV2 {
   #busy = false;
 
   static DEFAULT_OPTIONS = {
-    classes: ["dnd5e-stat-gen"],
-    tag: "div",
+    classes: ["dnd5e2", "dnd5e-stat-gen"],
+    tag: "section",
     window: { icon: ICON, resizable: false },
     position: { width: 580, height: "auto" },
     actions: {
@@ -132,7 +145,12 @@ class StatGenerator extends foundry.applications.api.ApplicationV2 {
   };
 
   get title() {
-    return t("Title", { name: this.actor.name });
+    return t("WindowTitle");
+  }
+
+  /** The dnd5e window header shows the title large and the subtitle beneath it. */
+  get subtitle() {
+    return this.actor.name;
   }
 
   /* ---------- State ---------- */
@@ -191,14 +209,18 @@ class StatGenerator extends foundry.applications.api.ApplicationV2 {
 
     const tabs = ["roll", "point", "array"].map(m => {
       const enabled = allowed.includes(m);
-      const active = m === this.method ? "active" : "";
-      return `<button type="button" class="sg-tab ${active}" data-action="method" data-method="${m}" ${enabled ? "" : "disabled"}>${esc(t(`Method.${m}`))}</button>`;
+      const active = m === this.method;
+      const cls = ["item", active ? "active" : "", enabled ? "" : "disabled"].filter(Boolean).join(" ");
+      const attrs = enabled ? `data-action="method"` : `aria-disabled="true"`;
+      return `<a class="${cls}" role="tab" aria-selected="${active}" ${attrs} data-tab="${m}" data-method="${m}">
+        <span><i class="${METHOD_ICONS[m]}" inert></i> ${esc(t(`Method.${m}`))}</span>
+      </a>`;
     }).join("");
 
     let intro = "";
     if (this.method === "roll") intro = this.#renderRollIntro();
     else if (this.method === "point") intro = this.#renderPointIntro();
-    else intro = `<p class="sg-hint">${esc(t("ArrayHint"))}</p>${this.#renderChips(this.pool)}`;
+    else intro = `<p class="hint">${esc(t("ArrayHint"))}</p>${this.#renderChips(this.pool)}`;
 
     const values = this.finalValues;
     const bonuses = advancementBonuses(this.actor);
@@ -207,18 +229,24 @@ class StatGenerator extends foundry.applications.api.ApplicationV2 {
     const canApply = complete && !overBudget;
 
     const reset = game.user.isGM
-      ? `<button type="button" class="sg-reset" data-action="reset"><i class="fas fa-rotate-left"></i> ${esc(t("Reset"))}</button>`
+      ? `<button type="button" class="sg-reset" data-action="reset"><i class="fa-solid fa-rotate-left" inert></i> ${esc(t("Reset"))}</button>`
       : "";
 
     return `
-      <nav class="sg-tabs">${tabs}</nav>
-      ${this.isCommitted ? `<p class="sg-notice"><i class="fas fa-lock"></i> ${esc(t("Committed"))}</p>` : ""}
-      <section class="sg-intro">${intro}</section>
-      ${this.#renderTable(values, bonuses)}
-      <footer class="sg-footer">
+      <nav class="tabs sheet-tabs sg-tabs" role="tablist">${tabs}</nav>
+      ${this.isCommitted ? `<p class="sg-notice"><i class="fa-solid fa-lock" inert></i> ${esc(t("Committed"))}</p>` : ""}
+      <fieldset class="card sg-intro">
+        <legend>${esc(t(`Method.${this.method}`))}</legend>
+        ${intro}
+      </fieldset>
+      <fieldset class="card sg-scores">
+        <legend>${esc(t("Scores"))}</legend>
+        ${this.#renderTable(values, bonuses)}
+      </fieldset>
+      <footer class="form-footer sg-footer">
         ${reset}
         <button type="button" class="sg-apply" data-action="apply" ${canApply ? "" : "disabled"}>
-          <i class="fas fa-check"></i> ${esc(t("Apply"))}
+          <i class="fa-solid fa-check" inert></i> ${esc(t("Apply"))}
         </button>
       </footer>`;
   }
@@ -317,21 +345,23 @@ class StatGenerator extends foundry.applications.api.ApplicationV2 {
     const label = state ? t("RerollButton") : t("RollButton");
     const controls = `
       <div class="sg-roll-controls">
-        <button type="button" data-action="roll" ${canRoll ? "" : "disabled"}><i class="fas fa-dice"></i> ${esc(label)}</button>
-        <span class="sg-meta">${esc(t("Formula", { formula }))}</span>
-        ${rerollText ? `<span class="sg-meta">${esc(rerollText)}</span>` : ""}
+        <button type="button" data-action="roll" ${canRoll ? "" : "disabled"}><i class="fa-solid fa-dice" inert></i> ${esc(label)}</button>
+        <ul class="pills">
+          <li class="pill transparent">${esc(t("Formula", { formula }))}</li>
+          ${rerollText ? `<li class="pill transparent">${esc(rerollText)}</li>` : ""}
+        </ul>
       </div>`;
 
-    if (!state) return `${controls}<p class="sg-hint">${esc(t("NoRollsYet"))}</p>`;
+    if (!state) return `${controls}<p class="hint">${esc(t("NoRollsYet"))}</p>`;
 
     const total = state.values.reduce((s, v) => s + v.total, 0);
     return `${controls}
-      <p class="sg-hint">${esc(t("AssignHint"))}</p>
+      <p class="hint">${esc(t("AssignHint"))}</p>
       ${this.#renderChips(state.values.map(v => v.total), state.values)}
       <div class="sg-row-actions">
-        <span class="sg-meta">${esc(t("Total", { total }))}</span>
-        <button type="button" data-action="inOrder">${esc(t("InOrder"))}</button>
-        <button type="button" data-action="clear">${esc(t("Clear"))}</button>
+        <ul class="pills"><li class="pill">${esc(t("Total", { total }))}</li></ul>
+        <button type="button" data-action="inOrder"><i class="fa-solid fa-arrow-down-1-9" inert></i> ${esc(t("InOrder"))}</button>
+        <button type="button" data-action="clear"><i class="fa-solid fa-eraser" inert></i> ${esc(t("Clear"))}</button>
       </div>`;
   }
 
@@ -340,9 +370,11 @@ class StatGenerator extends foundry.applications.api.ApplicationV2 {
     const spent = pointsSpent(this.points);
     const cls = spent > budget ? "over" : (spent === budget ? "done" : "");
     return `
-      <div class="sg-points ${cls}">${esc(t("PointsSpent", { spent, budget }))}</div>
-      <p class="sg-hint">${esc(t("PointsHint"))}</p>
-      <div class="sg-row-actions"><button type="button" data-action="clear">${esc(t("Clear"))}</button></div>`;
+      <div class="sg-row-actions">
+        <ul class="pills"><li class="pill sg-points ${cls}"><i class="fa-solid fa-coins" inert></i> ${esc(t("PointsSpent", { spent, budget }))}</li></ul>
+        <button type="button" data-action="clear"><i class="fa-solid fa-eraser" inert></i> ${esc(t("Clear"))}</button>
+      </div>
+      <p class="hint">${esc(t("PointsHint"))}</p>`;
   }
 
   /** Unplaced pool values as draggable chips. Placed ones leave the pool and live in their slot. */
@@ -376,9 +408,9 @@ class StatGenerator extends foundry.applications.api.ApplicationV2 {
         const step = v < PB_MAX ? POINT_COSTS[v + 1] - POINT_COSTS[v] : Infinity;
         input = `
           <div class="sg-stepper">
-            <button type="button" data-action="dec" data-ability="${key}" ${v <= PB_MIN ? "disabled" : ""}><i class="fas fa-minus"></i></button>
+            <button type="button" class="gold-button" data-action="dec" data-ability="${key}" ${v <= PB_MIN ? "disabled" : ""}><i class="fa-solid fa-minus" inert></i></button>
             <span class="sg-value">${v}</span>
-            <button type="button" data-action="inc" data-ability="${key}" ${step > remaining ? "disabled" : ""}><i class="fas fa-plus"></i></button>
+            <button type="button" class="gold-button" data-action="inc" data-ability="${key}" ${step > remaining ? "disabled" : ""}><i class="fa-solid fa-plus" inert></i></button>
           </div>`;
       } else {
         const idx = this.assign[key];
@@ -412,16 +444,16 @@ class StatGenerator extends foundry.applications.api.ApplicationV2 {
     return `
       <table class="sg-table">
         <thead><tr>
-          <th>${esc(t("Ability"))}</th>
-          <th>${esc(t("Current"))}</th>
-          <th>${esc(t("New"))}</th>
-          ${isPoint ? `<th>${esc(t("Cost"))}</th>` : ""}
-          <th>${esc(t("Bonus"))}</th>
-          <th>${esc(t("Final"))}</th>
+          <th class="col-ability">${esc(t("Ability"))}</th>
+          <th class="col-current">${esc(t("Current"))}</th>
+          <th class="col-new">${esc(t("New"))}</th>
+          ${isPoint ? `<th class="col-cost">${esc(t("Cost"))}</th>` : ""}
+          <th class="col-bonus">${esc(t("Bonus"))}</th>
+          <th class="col-final">${esc(t("Final"))}</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
-      ${ABILITIES.some(k => bonus[k]) ? `<p class="sg-hint">${esc(t("BonusHint"))}</p>` : ""}`;
+      ${ABILITIES.some(k => bonus[k]) ? `<p class="hint">${esc(t("BonusHint"))}</p>` : ""}`;
   }
 
   /* ---------- Handlers ---------- */

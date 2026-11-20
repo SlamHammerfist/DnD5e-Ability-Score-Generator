@@ -2,6 +2,8 @@
   "DND5ESG": {
     "Button": "Generate Stats",
     "Title": "Ability Score Generator: {name}",
+    "WindowTitle": "Ability Score Generator",
+    "Scores": "Ability Scores",
     "Method": {
       "roll": "Roll",
       "point": "Point Buy",
